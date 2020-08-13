@@ -11,8 +11,8 @@ class SimulatedAnnealing(HPOptimizationAbstract):
 
     def _check_hpo_params(self):
         result_param_list = list()
-        self._n_pop = 1
-        self._k = 0.1
+        self._n_pop = self._hpo_params["n_pop"]
+        self._k = self._hpo_params["k"] # random
         self._M = self._hpo_params["M"]
         self._T0 = self._hpo_params["T0"]
         self._alpha = self._hpo_params["alpha"]
@@ -21,7 +21,9 @@ class SimulatedAnnealing(HPOptimizationAbstract):
     def _generate(self, param_list, score_list):
         # 기준점 : x0
         result_param_list = list()
-        x0 = self._generate_single_params(hprs_info["pbounds"]["dropout_prob"])
+        # 파라미터 여러개 설정
+        #x0 = self._generate_single_params(hprs_info["pbounds"]["dropout_prob"])
+        x0 = self._generate_param_dict_list(self._n_params)
 
         for i in range(self._M):
             xt = 0
@@ -32,36 +34,37 @@ class SimulatedAnnealing(HPOptimizationAbstract):
             ran_x_2 = np.random.rand()
 
             if ran_x_1 >= 0.5:
-                x1 = self._k*ran_x_2
+                x1 = np.random.uniform(-0.1, 0.1)
             else:
-                x1 = -self._k*ran_x_2
+                x1 = -np.random.uniform(-0.1, 0.1)
 
-            xt = x0 + x1
+            # categorical, int
+            max = hprs_info["pbounds"]["dropout_prob"][1]
+            min = hprs_info["pbounds"]["dropout_prob"][0]
+            xt = np.clip(x0 + x1, min, max)
 
-            num_result_params = len(result_param_list)
-            result_param_list += self._generate_param_dict_list(num_result_params)
+            result_param_list += x0
             return result_param_list
 
-    def accept(self, param_dict_list, result_param_list):
+    def accept(self, param_dict_list, result_param_list, best_score_list, new_score_list):
         temp = []
         best_params_list = list()
 
         # dnn acc, score
-        of_new = self._update(self.hash_idx_list, self.score_list)
-        of_final = self._update(self.hash_idx_list, self.score_list)
+        of_new = new_score_list
+        of_final = best_score_list
 
         # 같으면 form을 확인하여 선택지 결정, 다르면 이웃을 선택한다.
         if param_dict_list == result_param_list :
-            best_params_list += param_dict_list
+            best_params_list = param_dict_list
         else :
             ran_1 = np.random.rand()
             form = 1 / (np.exp((of_new[1] - of_final[1]) / self._T0))
             if ran_1 <= form:
-                best_params_list += result_param_list
+                best_params_list = result_param_list
             else :
-                best_params_list += param_dict_list
+                best_params_list = param_dict_list
 
-        temp = np.append(temp, self._T0)
         self._T0 = self._alpha * self._T0
 
         return best_params_list
@@ -69,11 +72,10 @@ class SimulatedAnnealing(HPOptimizationAbstract):
 if __name__ == '__main__':
     hprs_info = {
         "hpo_params" : {
-                "beta" : 1.3,
                 "T0" : 0.40,
                 "alpha" : 0.85,
-                "update_n" : 5,
-                "n_steps": 10,
+                "n_pop" : 1,
+                "k" : 0.1,
                 "n_params": 10,
                 "k_val": 1,
                 "eval_key": "accuracy"

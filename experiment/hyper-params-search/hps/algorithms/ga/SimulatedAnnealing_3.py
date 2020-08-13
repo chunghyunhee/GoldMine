@@ -47,16 +47,16 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         temp = []
         best_params_list = list()
 
-        # 원래 score과 개선된 score을 확인하는 방법
-        of_new =
-        of_final =
+        # dnn acc, score
+        of_new = self._update(self.hash_idx_list, self.score_list)
+        of_final = self._update(self.hash_idx_list, self.score_list)
 
         # 같으면 form을 확인하여 선택지 결정, 다르면 이웃을 선택한다.
         if param_dict_list == result_param_list :
             best_params_list += param_dict_list
         else :
             ran_1 = np.random.rand()
-            form = 1 / (np.exp((of_new - of_final) / self._T0))
+            form = 1 / (np.exp((of_new[1] - of_final[1]) / self._T0))
             if ran_1 <= form:
                 best_params_list += result_param_list
             else :

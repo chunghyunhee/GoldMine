@@ -9,7 +9,6 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         self._check_hpo_params()
         self.DUP_CHECK = False
 
-
     def _check_hpo_params(self):
         result_param_list = list()
         self._n_pop = 1
@@ -22,7 +21,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
     def _generate(self, param_list, score_list):
         # 기준점 : x0
         result_param_list = list()
-        x0 = hprs_info["pbounds"]["dropout_prob"]
+        x0 = self._generate_single_params(hprs_info["pbounds"]["dropout_prob"])
 
         for i in range(self._M):
             xt = 0
@@ -96,10 +95,10 @@ if __name__ == '__main__':
             },
             "pbounds":{
                 "dropout_prob": [0, 0.5],
-                #"optimizer_fn": ["Adam", "rmsprop", "Adadelta"],
-                #"learning_rate": [0, 0.8],
-                #"act_fn": ["Tanh", "ReLU", "Sigmoid"],
-                #"hidden_units" : [3,1024]
+                "optimizer_fn": "Adam",
+                "learning_rate": 0.8,
+                "act_fn": "Sigmoid",
+                "hidden_units" : 50
             }
         }
     }

@@ -46,7 +46,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
                         x1 = -np.random.uniform(-0.1, 0.1)
                     xt = np.clip(x0 + x1, min, max)
 
-            result_param_list += xt
+            result_param_list = xt
             return result_param_list
 
     def accept(self, param_dict_list, result_param_list, best_score_list, new_score_list):

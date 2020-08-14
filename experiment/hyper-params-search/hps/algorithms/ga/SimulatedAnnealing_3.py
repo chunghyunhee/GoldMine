@@ -10,7 +10,6 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         self.DUP_CHECK = False
 
     def _check_hpo_params(self):
-        result_param_list = list()
         self._n_pop = self._hpo_params["n_pop"]
         self._M = self._hpo_params["M"]
         self._T0 = self._hpo_params["T0"]
@@ -20,32 +19,34 @@ class SimulatedAnnealing(HPOptimizationAbstract):
     def _generate(self, param_list, score_list):
         # 기준점 : x0
         result_param_list = list()
-        # 파라미터 여러개 설정
         x0 = self._generate_param_dict_list(self._n_params)
 
         for i in range(self._M):
-            xt = 0
-            result_param_list = list()
+            xt = self._generate_param_dict_list(self._n_params)
 
-            # to make candidate : xt
+            # to make candidate xt, make random value
             ran_x_1 = np.random.rand()
-            ran_x_2 = np.random.rand()
 
-            if ran_x_1 >= 0.5:
-                x1 = np.random.uniform(-0.1, 0.1)
-            else:
-                x1 = -np.random.uniform(-0.1, 0.1)
-            # categorical, int형 모두 가능한지 확인(abstract함수와 연동이 되는건지)
-            # max, min의 범위가 다른 것에도 연동되도록 한다.
-            bound_data =
-            if type(bound_data[1]) == 'String':
+            # type에 따른 random값
+            for _, (key, value) in enumerate(self._pbounds):
+                if key == 'optimizer_fn' or key == 'act_fn':
+                    min = 0
+                    max = len(key)
+                    xt = np.clip(x0, min, max)
+                elif key == 'hidden_units' or key == "filter_sizes" or key == "pool_sizes":
+                    min = value[0]
+                    max = value[1]
+                    xt = np.clip(x0, min, max)
+                else :
+                    min = value[0]
+                    max = value[1]
+                    if ran_x_1 >=0.5:
+                        x1 = np.random.uniform(-0.1, 0.1)
+                    else:
+                        x1 = -np.random.uniform(-0.1, 0.1)
+                    xt = np.clip(x0 + x1, min, max)
 
-
-            max = hprs_info["pbounds"]["dropout_prob"][1]
-            min = hprs_info["pbounds"]["dropout_prob"][0]
-            xt = np.clip(x0 + x1, min, max)
-
-            result_param_list = xt
+            result_param_list += xt
             return result_param_list
 
     def accept(self, param_dict_list, result_param_list, best_score_list, new_score_list):
@@ -56,9 +57,8 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         of_new = new_score_list
         of_final = best_score_list
 
-        # 같으면 form을 확인하여 선택지 결정, 다르면 이웃을 선택한다.
-        #
-        if param_dict_list == result_param_list :
+        # best값과 neighbor값의 비교
+        if of_new <= of_final :
             best_params_list = param_dict_list
         else :
             ran_1 = np.random.rand()

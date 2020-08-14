@@ -12,7 +12,6 @@ class SimulatedAnnealing(HPOptimizationAbstract):
     def _check_hpo_params(self):
         result_param_list = list()
         self._n_pop = self._hpo_params["n_pop"]
-        self._k = self._hpo_params["k"] # random
         self._M = self._hpo_params["M"]
         self._T0 = self._hpo_params["T0"]
         self._alpha = self._hpo_params["alpha"]
@@ -22,7 +21,6 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         # 기준점 : x0
         result_param_list = list()
         # 파라미터 여러개 설정
-        #x0 = self._generate_single_params(hprs_info["pbounds"]["dropout_prob"])
         x0 = self._generate_param_dict_list(self._n_params)
 
         for i in range(self._M):
@@ -37,13 +35,17 @@ class SimulatedAnnealing(HPOptimizationAbstract):
                 x1 = np.random.uniform(-0.1, 0.1)
             else:
                 x1 = -np.random.uniform(-0.1, 0.1)
+            # categorical, int형 모두 가능한지 확인(abstract함수와 연동이 되는건지)
+            # max, min의 범위가 다른 것에도 연동되도록 한다.
+            bound_data =
+            if type(bound_data[1]) == 'String':
 
-            # categorical, int
+
             max = hprs_info["pbounds"]["dropout_prob"][1]
             min = hprs_info["pbounds"]["dropout_prob"][0]
             xt = np.clip(x0 + x1, min, max)
 
-            result_param_list += x0
+            result_param_list = xt
             return result_param_list
 
     def accept(self, param_dict_list, result_param_list, best_score_list, new_score_list):
@@ -55,6 +57,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         of_final = best_score_list
 
         # 같으면 form을 확인하여 선택지 결정, 다르면 이웃을 선택한다.
+        #
         if param_dict_list == result_param_list :
             best_params_list = param_dict_list
         else :

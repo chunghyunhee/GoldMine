@@ -1,39 +1,35 @@
-class Particle:
+import numpy as np
+from random import random
+from random import uniform
+from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
+
+class ParticleSwarmOptimization:
     def __init__(self, **kwargs):
-        self.position_i = []  # particle position
-        self.velocity_i = []  # particle velocity
-        self.pos_best_i = []  # best position individual
-        self.err_best_i = []  # best error individual
-        self.err_i = -1       # error individual
         # inheritance init
         super(ParticleSwarmOptimization, self).__init__(**kwargs)
         self._check_hpo_params()
         self.DUP_CHECK = False
 
-
     def _check_hpo_params(self):
         self._n_pop = self._n_params
         self._n_steps = self._hpo_params["n_steps"]
-        self._position_list = self._hpo_params["position_list"]               # for position
+        self._position_list = self._hpo_params["position_list"]
         self._bounds = self._hpo_params(["bounds"])
-
-
-        for i in range(0, num_dimentions):
-            # init the particle position and velocity
-            self.velocity_i.append(uniform(-1, 1))
-            self.position_i.append(self._position_list[i])
+        self._w = self._hpo_params(["w"])       # constant of the inertia weight
+        self._c1 = self._hpo_params(["c1"])     # cognitive constants
+        self._c2 = self._hpo_params(["c2"])     # social constants
 
     ## PSO overall process
     # generate candidate function
     def _generate(self, param_list, score_list):
         result_param_list = list()
         # generate random hyperparameter
-        best_param_list = self._population(param_list)
-        evaluate_value = self.evaluate(param_list)
-        update_velocity_params = self.update_velocity(param_list)
-        update_position_params = self.update_position(param_list)
+        best_param_list = self._particle(param_list)
+        update_velocity_params = self.velocity(param_list)
+        update_position_params = self.position(param_list)
 
-        result_param_list += evaluate_value+update_velocity_params+update_position_params
+        result_param_list += update_velocity_params + update_position_params
+        result_param_list = self._remove_duplicate_params(result_param_list)
         num_result_params = len(result_param_list)
 
         ## leak
@@ -46,22 +42,15 @@ class Particle:
 
         return best_param_list
 
-    # evaluate current fitness
-    def evaluate(self, param_list):
-        self.err_i = self.optimize()
-
-        # check to see if the current position is an individual best value
-        if self.err_i < self.err_best_i or self.err_best_i == -1 :
-            self.pos_best_i = self.pos_best_i.copy()
-            self.err_best_i = self.err_i
+    def _particle(self, param_list):
+        if len(param_list) == 0:
+            return self._generate_param_dict_list(self._n_pop)
+        else :
+            return param_list
 
     # update new particle velocity
     def update_velocity(self, param_list):
-        w = 0.5  # constant of the inertia weight
-        c1 = 1   # cognitive constants
-        c2 = 2   # social constants
-
-        for i in range(0, num_dimentions):
+        for i in range(0, len(param_list)):
             r1 = random()
             r2 = random()
 

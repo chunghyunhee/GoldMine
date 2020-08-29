@@ -3,6 +3,7 @@
 # e-mail : jinkim@seculayer.com
 # Powered by Seculayer © 2020 Solution Development 2 Team, R&D Center. 
 #
+
 import random
 import time
 import numpy as np
@@ -135,6 +136,6 @@ if __name__ == '__main__':
             }
         }
     }
-    ga = GeneticAlgorithm(hprs_info=hprs_info)
+    ga = GeneticAlgorithm(hprs_info)
     best_params = ga._generate([], [])
     print(best_params)

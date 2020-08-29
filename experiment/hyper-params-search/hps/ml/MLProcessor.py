@@ -37,7 +37,7 @@ class MLProcessor(multiprocessing.Process):
 
     def run(self):
         self.LOGGER.info("MLProcessing Running")
-        TensorFlowUtils.device_memory_limit(self.gpu_idx, self.mem_limit)
+        #TensorFlowUtils.device_memory_limit(self.gpu_idx, self.mem_limit)
 
         # ml algorithm
         algorithm = MLAlgorithmFactory.create(self.algorithm_name, self.param_dict)

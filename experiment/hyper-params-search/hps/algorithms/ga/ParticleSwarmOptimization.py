@@ -3,7 +3,7 @@ from random import random
 from random import uniform
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
 
-class ParticleSwarmOptimization:
+class ParticleSwarmOptimization(HPOptimizationAbstract):
     def __init__(self, **kwargs):
         # inheritance init
         super(ParticleSwarmOptimization, self).__init__(**kwargs)
@@ -13,9 +13,9 @@ class ParticleSwarmOptimization:
     def _check_hpo_params(self):
         self._n_pop = self._n_params
         self._n_steps = self._hpo_params["n_steps"]
-        self._w = self._hpo_params(["w"])       # constant of the inertia weight
-        self._c1 = self._hpo_params(["c1"])     # cognitive constants
-        self._c2 = self._hpo_params(["c2"])     # social constants
+        self._w = self._hpo_params["w"]     # constant of the inertia weight
+        self._c1 = self._hpo_params["c1"]   # cognitive constants
+        self._c2 = self._hpo_params["c2"]     # social constants
 
     ## PSO overall process
     # generate candidate function
@@ -90,11 +90,13 @@ class ParticleSwarmOptimization:
 if __name__ == '__main__':
     hprs_info = {
         "hpo_params" : {
+                "n_params" : 10,
                 "n_steps" : 100,
                 "bounds" : [0,10],
                 "w" : 0.1,
                 "c1": 3,
                 "c2": 3,
+                "k_val": 5,
                 "eval_key": "accuracy"
             },
         "ml_params":{

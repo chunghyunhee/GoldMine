@@ -1,16 +1,17 @@
 {
   "dataset" : "mnist",
-  "hpo_alg": "GA",
+  "hpo_alg": "PSO",
   "hpo_params" : {
-    "mut_prob" : 0.5,
-    "cx_prob" : 0.5,
-    "sel_ratio" : 0.5,
-    "mut_ratio" : 0.25,
-    "cx_ratio" : 0.25,
-    "n_steps" : 2,
-    "n_params" : 10,
-    "k_val" : 3,
+    "n_params": 10,
+    "n_steps" : 100,
+    "bounds" : [0,10],
+    "w" : 0.1,
+    "c1" : 3,
+    "c2" : 3,
+    "k_val" : 5,
     "eval_key" : "accuracy"
+
+
   },
   "ml_alg" : "DNN",
   "ml_params" : {

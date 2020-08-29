@@ -1,16 +1,15 @@
 {
   "dataset" : "mnist",
-  "hpo_alg": "GA",
+  "hpo_alg": "SA_2".
   "hpo_params" : {
-    "mut_prob" : 0.5,
-    "cx_prob" : 0.5,
-    "sel_ratio" : 0.5,
-    "mut_ratio" : 0.25,
-    "cx_ratio" : 0.25,
-    "n_steps" : 2,
-    "n_params" : 10,
-    "k_val" : 3,
-    "eval_key" : "accuracy"
+    "beta" : 1.3,
+    "T0" : 0.40,
+    "alpha" : 0.85,
+    "n_update" : 5,
+    "n_steps": 100,
+    "n_params": 10,
+    "k_val": 5,
+    "eval_key": "accuracy"
   },
   "ml_alg" : "CNN",
   "ml_params" : {

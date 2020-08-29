@@ -106,6 +106,7 @@ class HPOptimizationAbstract(object):
             param_dict = self._generate_param_dict(dup_check=self.DUP_CHECK)
             param_dict_list.append(param_dict)
         return param_dict_list
+
     ###### Generate Parameters END
 
     ### DUPLICATE

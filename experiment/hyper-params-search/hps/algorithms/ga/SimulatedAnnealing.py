@@ -1,73 +1,80 @@
+import random
+import time
 import numpy as np
-from random import random
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
 
+
 class SimulatedAnnealing(HPOptimizationAbstract):
+
     def __init__(self, **kwargs):
         # inheritance init
         super(SimulatedAnnealing, self).__init__(**kwargs)
         self._check_hpo_params()
         self.DUP_CHECK = False
 
+    ##### implement methods
     def _check_hpo_params(self):
-        self._n_pop = self._hpo_params["n_pop"]
-        self._M = self._hpo_params["M"]
+        self._n_pop = self._n_params
         self._T0 = self._hpo_params["T0"]
         self._alpha = self._hpo_params["alpha"]
+        self._k = self._hpo_params["k"]
+        self._n_steps = self._hpo_params["n_steps"]
 
-    # neighbor selection
     def _generate(self, param_list, score_list):
-        # 기준점 : x0
         result_param_list = list()
-        x0 = self._generate_param_dict_list(self._n_params)
 
-        for i in range(self._M):
-            xt = self._generate_param_dict_list(self._n_params)
+        # random init population
+        best_param_list = self._population(param_list)
+        # population 값과 비교할 후보군
+        neighbor_selection = self._neighbor(best_param_list)
+        # population & 후보군 중 선택하는 방법
+        accept_criteria = self._accept(neighbor_selection, best_param_list)
 
-            # to make candidate xt, make random value
-            ran_x_1 = np.random.rand()
+        result_param_list = accept_criteria
+        result_param_list = self._remove_duplicate_params(result_param_list)
+        num_result_params = len(result_param_list)
 
-            # type에 따른 random값
-            for _, (key, value) in enumerate(self._pbounds):
-                if key == 'optimizer_fn' or key == 'act_fn':
-                    min = 0
-                    max = len(key)
-                    xt = np.clip(x0, min, max)
-                elif key == 'hidden_units' or key == "filter_sizes" or key == "pool_sizes":
-                    min = value[0]
-                    max = value[1]
-                    xt = np.clip(x0, min, max)
-                else :
-                    min = value[0]
-                    max = value[1]
-                    if ran_x_1 >=0.5:
-                        x1 = np.random.uniform(-0.1, 0.1)
-                    else:
-                        x1 = -np.random.uniform(-0.1, 0.1)
-                    xt = np.clip(x0 + x1, min, max)
+        ## leak
+        if  num_result_params < self._n_pop:
+            result_param_list += self._generate_param_dict_list(self._n_pop - num_result_params)
 
-            result_param_list = xt
-            return result_param_list
+        ## over
+        elif num_result_params > self._n_pop :
+            random.shuffle(result_param_list)
+            result_param_list = result_param_list[:self._n_pop]
+        return result_param_list
 
-    def accept(self, param_dict_list, result_param_list, best_score_list, new_score_list):
-        temp = []
+
+    # population 초기화
+    def _population(self, param_list):
+        if len(param_list) == 0:
+            return self._generate_param_dict_list(self._n_pop)
+        else :
+            return param_list
+
+    # neighbor selection로 candidate 생성
+    def _neighbor(self, param_dict_list):
+        return self._generate_param_dict_list(self._n_params)
+
+    # accept criteria
+    def _accept(self, param_dict_list, best_params):
         best_params_list = list()
 
-        # dnn acc, score
-        of_new = new_score_list
-        of_final = best_score_list
+        of_final = self._learn(self._n_steps, param_dict_list)
+        of_new = self._learn(self.n_steps, best_params)
 
         # best값과 neighbor값의 비교
         if of_new <= of_final :
             best_params_list = param_dict_list
         else :
-            ran_1 = np.random.rand()
+            random_value = np.random.rand()
             form = 1 / (np.exp((of_new[1] - of_final[1]) / self._T0))
-            if ran_1 <= form:
-                best_params_list = result_param_list
+            if random_value <= form :
+                best_params_list = best_params
             else :
                 best_params_list = param_dict_list
 
+        # temperature 조절
         self._T0 = self._alpha * self._T0
 
         return best_params_list
@@ -107,6 +114,8 @@ if __name__ == '__main__':
             }
         }
     }
-    ga = SimulatedAnnealing(hps_info = hprs_info)
-    best_params = ga._generate([], [])
+    sa = SimulatedAnnealing(hps_info = hprs_info)
+    best_params = sa._generate([], [])
     print(best_params)
+
+

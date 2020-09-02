@@ -61,7 +61,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         best_params_list = list()
 
         of_final = self._learn(self._n_steps, param_dict_list)
-        of_new = self._learn(self.n_steps, best_params)
+        of_new = self._learn(self._n_steps, best_params)
 
         # best값과 neighbor값의 비교
         if of_new <= of_final :
@@ -82,14 +82,14 @@ class SimulatedAnnealing(HPOptimizationAbstract):
 if __name__ == '__main__':
     hprs_info = {
         "hpo_params" : {
-                "T0" : 0.40,
-                "alpha" : 0.85,
-                "n_pop" : 1,
-                "k" : 0.1,
-                "n_params": 10,
-                "k_val": 1,
-                "eval_key": "accuracy"
-            },
+            "T0" : 0.40,
+            "alpha" : 0.85,
+            "n_pop" : 1,
+            "k" : 0.1,
+            "n_params": 10,
+            "k_val": 1,
+            "eval_key": "accuracy"
+        },
         "ml_params":{
             "model_param":{
                 "input_units" : "100",
@@ -117,5 +117,3 @@ if __name__ == '__main__':
     sa = SimulatedAnnealing(hps_info = hprs_info)
     best_params = sa._generate([], [])
     print(best_params)
-
-

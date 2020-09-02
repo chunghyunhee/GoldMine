@@ -5,6 +5,7 @@
 
 from hps.algorithms.ga.GeneticAlgorithm import GeneticAlgorithm
 from hps.algorithms.ga.ParticleSwarmOptimization import ParticleSwarmOptimization
+from hps.algorithms.ga.SimulatedAnnealing import SimulatedAnnealing
 
 # class : HPOptimizerFactory
 class HPOptimizerFactory(object):
@@ -18,5 +19,8 @@ class HPOptimizerFactory(object):
         elif hpo_alg == "PSO":
             pso = ParticleSwarmOptimization(hps_info=hpo_dict)
             return pso
+        elif hpo_alg == "SA":
+            sa = SimulatedAnnealing(hps_info=hpo_dict)
+            return sa
         else:
             raise NotImplementedError

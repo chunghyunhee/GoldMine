@@ -1,11 +1,13 @@
 {
   "dataset" : "mnist",
-  "hpo_alg": "PSO",
+  "hpo_alg": "SA",
   "hpo_params" : {
     "n_params": 5,
     "n_steps" : 5,
-    "c1" : 2,
-    "c2" : 3,
+    "T0" : 0.40,
+    "alpha" : 0.1,
+    "n_pop" : 1,
+    "k" : 0.1,
     "k_val" : 1,
     "eval_key" : "accuracy"
 

@@ -1,4 +1,4 @@
-
+from random import uniform
 import numpy as np
 import json
 
@@ -58,6 +58,8 @@ class HPOptimizationAbstract(object):
         ## return top-k best parameter and score
         return self._make_best_params(self.hash_idx_list, self.score_list)
 
+
+
     ###############
     ### abstract function... must implement child class!
     def _check_hpo_params(self):
@@ -74,6 +76,8 @@ class HPOptimizationAbstract(object):
             tmp_list.append(int(np.random.randint(1,bound_data[1])))
         return ",".join(map(str, tmp_list))
 
+
+
     @staticmethod
     def _generate_single_params(bound_data):
         if type(bound_data[1]) == int :
@@ -89,6 +93,7 @@ class HPOptimizationAbstract(object):
             return self._generate_int_list_params(self._pbounds[key])
         else :
             return self._generate_single_params(self._pbounds[key])
+
 
     def _generate_param_dict(self, dup_check=True):
         param_dict = dict()
@@ -107,9 +112,58 @@ class HPOptimizationAbstract(object):
             param_dict_list.append(param_dict)
         return param_dict_list
 
+
+
+    ### stratified ###
+
+    @staticmethod
+    def stratified_generate_int_list_param(param_index, bound_data):
+        tmp_list = list()
+        for i in range(np.random.randint(1, bound_data[0])):
+            # stratified = 5, each particle's parameter sampled
+            if param_index % 5 == 0:
+                tmp_list.append(int(np.random.randint(1, bound_data[1]/5)))
+            elif param_index % 5 == 1 :
+                tmp_list.append(int(np.random.randint(bound_data[1]/5, (bound_data[1]*2)/5)))
+            elif param_index % 5 == 2 :
+                tmp_list.append(int(np.random.randint((bound_data[1]*2)/5, (bound_data[1]*3)/5)))
+            elif param_index % 5 == 3:
+                tmp_list.append(int(np.random.randint((bound_data[1]*3)/5, (bound_data[1]*4)/5)))
+            else :
+                tmp_list.append(int(np.random.randint((bound_data[1]*4)/5, bound_data[1])))
+        return ",".join(map(str, tmp_list))
+
+    def _generate_stratified_param(self, param_index, key):
+        if key == 'hidden_units' or key == "filter_sizes" or key == "pool_sizes":
+            # TODO : first value of hidden, filter, pool must be above 1
+            return self.stratified_generate_int_list_param(param_index, self._pbounds[key])
+        else :
+            return self._generate_single_params(self._pbounds[key])
+
+    def _generate_stratified_param_dict(self, param_index, dup_check = True):
+        param_dict = dict()
+        for _ , key in enumerate(self._pbounds):
+            param_dict[key] = self._generate_stratified_param(param_index, key)
+
+        if not self._check_duplicated_param_dict(self.unique_param_dict, param_dict) and dup_check:
+            return param_dict
+        else :
+            return self._generate_param_dict()
+
+    def _generate_stratified_param_list(self, num_params):
+        param_dict_list = list()
+        for i in range(num_params):
+            param_dict = self._generate_stratified_param_dict(i, dup_check=self.DUP_CHECK)
+            param_dict_list.append(param_dict)
+        return param_dict_list
+
+    ###
+
+
     ###### Generate Parameters END
 
     ### DUPLICATE
+
     @staticmethod
     def _param_dict_to_hash(param_dict):
         result_str = ""

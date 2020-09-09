@@ -1,6 +1,5 @@
 import numpy as np
 import random
-import time
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
 
 
@@ -13,7 +12,6 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
 
     def _check_hpo_params(self):
         self._n_pop = self._n_params
-        self._w = self._hpo_params["w"]
         self._n_steps = self._hpo_params["n_steps"]
         self._c1 = self._hpo_params["c1"]     # cognitive constants
         self._c2 = self._hpo_params["c2"]     # social constants
@@ -35,12 +33,10 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
         # position 변경
         compute_velocity_params = self.compute_velocity(best_param_list, p_best, g_best)
         update_position_params = self.update_position(best_param_list, compute_velocity_params)
-        result_param_list += update_position_params
 
 
         # if duplicate, generate new particle
         result_param_list = self._remove_duplicate_params(result_param_list)
-
         num_result_params = len(result_param_list)
         ## leak
         if num_result_params < self._n_pop:
@@ -50,6 +46,9 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
             random.shuffle(result_param_list)
             result_param_list = result_param_list[:self._n_pop]
 
+
+        #check params
+        #result_param_list += update_position_params
         return result_param_list
 
 
@@ -59,6 +58,7 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
             return param_list[0]
         else :
             max_score_value = max(score_list)
+
             for i in range(len(score_list)):
                 if max_score_value == score_list[i]:
                     return param_list[i]
@@ -74,18 +74,20 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
                     return param_list[i]
 
 
-
-
     # random init particle position
     def _particle(self, param_list):
         if len(param_list) == 0:
-            return self._generate_stratified_param_list(self._n_pop)
+            return self._generate_param_dict_list(self._n_pop)
         else :
             return param_list
 
 
 
     def compute_velocity(self,param_dict_list, pos_best_i, g_best_i):
+        # random inertia weight
+        #w = random.uniform(0,1)
+        w = 0.75
+
         # initialize each velocity dictionary in list
         velocity_list = list()
         velocity_dict = dict()
@@ -101,17 +103,14 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
 
                 # modified velocity for multi-dim
                 if type(param_dict[j]) == int or type(param_dict[j]) == float:
-                    if (abs(velocity_list[i][j]) + abs(g_best_i[j] - param_dict[j]) < self._delta) and type(param_dict[j] == float):
-                        velocity_list[i][j] =  (2*random.random()-1) * self._delta
-                    else:
-                        vel_cognitive = self._c1*r1*(pos_best_i[j] - param_dict[j])
-                        vel_social = self._c2*r2*(g_best_i[j] - param_dict[j])
-                        velocity_list[i][j] = self._w * velocity_list[i][j] + vel_cognitive + vel_social
+                    vel_cognitive = self._c1*r1*(pos_best_i[j] - param_dict[j])
+                    vel_social = self._c2*r2*(g_best_i[j] - param_dict[j])
+                    velocity_list[i][j] = w * velocity_list[i][j] + vel_cognitive + vel_social
 
                 else :
                     vel_cognitive = self._c1 * r1
                     vel_social = self._c2 * r2
-                    velocity_list[i][j] = self._w * velocity_list[i][j] + vel_cognitive + vel_social
+                    velocity_list[i][j] = w * velocity_list[i][j] + vel_cognitive + vel_social
 
         return velocity_list
 
@@ -137,7 +136,6 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
 if __name__ == '__main__':
     hprs_info = {
         "hpo_params" : {
-            "w" : 0.75,
             "delta" : 1,
             "n_params" : 10,
             "n_steps" : 20,

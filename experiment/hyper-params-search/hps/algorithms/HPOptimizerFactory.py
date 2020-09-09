@@ -5,7 +5,7 @@
 
 from hps.algorithms.ga.GeneticAlgorithm import GeneticAlgorithm
 from hps.algorithms.ga.ParticleSwarmOptimization import ParticleSwarmOptimization
-from hps.algorithms.ga.SimulatedAnnealing import SimulatedAnnealing
+from hps.algorithms.ga.SimulatedAnnealing_3 import SimulatedAnnealing
 
 # class : HPOptimizerFactory
 class HPOptimizerFactory(object):

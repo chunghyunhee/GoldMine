@@ -10,9 +10,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         # inheritance init
         super(SimulatedAnnealing, self).__init__(**kwargs)
         self._check_hpo_params()
-        self.DUP_CHECK = False
 
-    ##### implement methods
     def _check_hpo_params(self):
         self._n_pop = self._n_params
         self._T0 = self._hpo_params["T0"]
@@ -32,16 +30,6 @@ class SimulatedAnnealing(HPOptimizationAbstract):
 
         result_param_list = accept_criteria
         result_param_list = self._remove_duplicate_params(result_param_list)
-        num_result_params = len(result_param_list)
-
-        ## leak
-        if  num_result_params < self._n_pop:
-            result_param_list += self._generate_param_dict_list(self._n_pop - num_result_params)
-
-        ## over
-        elif num_result_params > self._n_pop :
-            random.shuffle(result_param_list)
-            result_param_list = result_param_list[:self._n_pop]
         return result_param_list
 
 
@@ -60,8 +48,9 @@ class SimulatedAnnealing(HPOptimizationAbstract):
     def _accept(self, param_dict_list, best_params):
         best_params_list = list()
 
-        of_final = self._learn(self._n_steps, param_dict_list)
-        of_new = self._learn(self._n_steps, best_params)
+        _, of_final = self._learn(self._n_steps, param_dict_list)
+        _, of_new = self._learn(self._n_steps, best_params)
+
 
         # best값과 neighbor값의 비교
         if of_new <= of_final :

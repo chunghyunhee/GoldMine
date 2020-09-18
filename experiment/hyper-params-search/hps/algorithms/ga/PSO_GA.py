@@ -1,14 +1,13 @@
-## SA + PSO + GA + boundary(GA)
+## PSO + GA
 
 import numpy as np
 import random
 import time
 
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
-from hps.algorithms.ga.SimulatedAnnealing_3 import  SimulatedAnnealing
 from hps.algorithms.ga.GeneticAlgorithm import GeneticAlgorithm
 
-class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimizationAbstract):
+class ParticleSwarmOptimization(GeneticAlgorithm, HPOptimizationAbstract):
     def __init__(self, **kwargs):
         # inheritance init
         super(ParticleSwarmOptimization, self).__init__(**kwargs)
@@ -27,10 +26,6 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
         self._delta = self._hpo_params["delta"]    # modified PSO
         self.count = self._hpo_params["count"]
 
-        ## SA
-        self._T0 = self._hpo_params["T0"]
-        self._alpha = self._hpo_params["alpha"]
-
         ## GA
         self._top = int(float(self._n_params * 0.5))
         self._n_prob = self._n_params
@@ -44,7 +39,6 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
     def _generate(self, param_list, score_list, iter_num):
         result_param_list = list()
         p_best_list = list()
-        bound_dict_list = list()
 
         # generate random hyperparameter
         best_param_list = self._particle(param_list)
@@ -54,24 +48,13 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
         p_best_list.append(p_best)
 
         # 상위 score의 particle은 GA로 새로 생성
-        if len(bound_dict_list) == 0:
-            # self._pbounds값으로 대체
-            for i in range(len(best_param_list)):
-                bound_dict_list += self._pbounds
-                GA_param_list = self._generate_GA_particle(best_param_list, bound_dict_list)
-        else :
-            bound_dict_list = self.ga_boundary(best_param_list, iter_num, bound_dict_list)
-            GA_param_list = self._generate_GA_particle(best_param_list, bound_dict_list)
+        GA_param_list = self._generate_GA_particle(best_param_list)
 
         # gbest갱신
         g_best, p_best_list = self._g_best(GA_param_list, p_best_list)
-        # k번동안 update되지 않으면 sa로 새로 갱신
-        g_best_pso = self.update_gbest(g_best)
-
-        self.LOGGER.info("{}".format(g_best_pso))
 
         # position 변경
-        compute_velocity_params = self.compute_velocity(GA_param_list, p_best, g_best_pso)
+        compute_velocity_params = self.compute_velocity(GA_param_list, p_best, g_best)
         update_position_params = self.update_position(GA_param_list, compute_velocity_params)
         result_param_list += update_position_params
 
@@ -89,13 +72,13 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
 
         return result_param_list
 
-    def _generate_GA_particle(self, param_list, bound_dict_list):
+    def _generate_GA_particle(self, param_list):
         top_param_list = list()
 
         for i in range(1, self._top):
             top_param_list.append(param_list[i])
 
-        self.LOGGER.info("{}".format(top_param_list))
+        #self.LOGGER.info("{}".format(top_param_list))
 
         # GA 적용
         result_param_list = list()   # 결과반환
@@ -103,7 +86,7 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
 
         best_param_list += top_param_list
         sel_params = self._selection(best_param_list)
-        mut_params = self._mutation(best_param_list, bound_dict_list)
+        mut_params = self._mutation(best_param_list)
         cx_params = self._crossover(best_param_list)
 
         result_param_list += sel_params + mut_params + cx_params
@@ -138,28 +121,6 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
                 if global_value == p_best_list[i]:
                     all_list.append(global_value)
                     return global_value, all_list
-
-    # global value를 받아 sa진행
-    def update_gbest(self, global_dict):
-        self.count += 1 # 현제 step count
-
-        if self.count % self._k == 0 :
-            result_param_list = list()
-            best_param_list = list()
-
-            best_param_list.append(global_dict)
-            neighbor_param_list = self._neighbor_selection(best_param_list)
-            result_param_list += best_param_list + neighbor_param_list # ( glbal_best , neighbor_candidate )
-
-            if len(self.score_list) != 0:
-                result_param_list = self.accept(result_param_list)
-
-            return result_param_list[0]
-
-        else :
-            result_param_list = list()
-            result_param_list.append(global_dict)
-            return result_param_list[0]
 
 
     # random init particle position
@@ -221,53 +182,6 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
                     param_dict[j] = param_dict[j]
         return param_list
 
-    # GA에 들어가는 boundary
-    ## abstract, GA_mutate 변경
-    def ga_boundary(self, param_list, iter, bound_dict_list):
-
-        # mutation rate init
-        mutrate = self._mut_prob
-
-        # 각 particle 별 bounds 따로 생성
-        for i, param_dict in enumerate(param_list):
-            for j in param_dict.keys():
-                inner_bound_list = list()
-
-                if type(param_dict[j]) == int or type(param_dict[j]) == float :
-
-                    # 이전의 bound에서 값 벋아서 변경
-                    mutrange = (bound_dict_list[i][1] - bound_dict_list[i][0]) * ( 1 -  iter / self._n_steps )**( 5/mutrate )
-
-                    upper_bounds = param_dict[j] + mutrange
-                    lower_bounds = param_dict[j] - mutrange
-
-                    # 기존 범위에서 벗어나는지 확인
-                    if lower_bounds < self._pbounds[j][0] :
-                        lower_bounds = self._pbounds[j][0]
-                    if upper_bounds > self._pbounds[j][1]:
-                        upper_bounds = self._pbounds[j][1]
-
-                    inner_bound_list.append(lower_bounds)
-                    inner_bound_list.append(upper_bounds)
-
-                    # param별  bound지정
-                    param_dict[j] = inner_bound_list
-
-                bound_dict_list += param_dict
-        return bound_dict_list
-
-    # boundary 변경하는 mutation override
-    def _mutation(self, param_dict_list, bound_dict_list):
-        mut_params = list()
-        for param_dict in param_dict_list[:self._n_mut]:
-            temp_param_dict = dict()
-            for _ , key in enumerate(bound_dict_list):
-                if np.random.rand() > self._mut_prob:
-                    temp_param_dict[key] = self._generate_new_param(key, bound_dict_list)
-                else :
-                    temp_param_dict[key] = param_dict[key]
-            mut_params.append(temp_param_dict)
-        return mut_params
 
 # main __init__ to execute in this single file
 if __name__ == '__main__':

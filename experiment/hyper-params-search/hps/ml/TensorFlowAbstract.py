@@ -71,4 +71,12 @@ class TensorFlowAbstract(object):
         return result_callback.get_result()
 
     def predict(self, dataset):
-        return self.model.predict(dataset)
+        ## callbacks
+        result_callback = LearnResultCallback(global_sn=self.param_dict.get("global_sn", "0"))
+        early_stop_callback = EarlyStopCallback(self.param_dict)
+
+        self.model.predict(
+            dataset, callbacks=[result_callback, early_stop_callback])
+
+        self.stopped_epoch = early_stop_callback.get_stopped_epoch()
+        return result_callback.get_result()

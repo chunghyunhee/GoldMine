@@ -41,8 +41,8 @@ class HPOptimizationAbstract(object):
         ## Hyper Parameter Optimize
         for i in range(self._n_steps):
             ### Generate Candidate parameters
-            hyper_param_list = self._generate(param_list, score_list)
-            self.LOGGER.info(hyper_param_list)
+            #hyper_param_list = self._generate(param_list, score_list)
+            hyper_param_list = self._generate(param_list, score_list, i)
 
             ### Get learning results
             hash_list, score_list = self._learn(i, hyper_param_list)
@@ -65,8 +65,11 @@ class HPOptimizationAbstract(object):
     def _check_hpo_params(self):
         raise NotImplementedError
 
-    def _generate(self, param_list, score_list):
+    def _generate(self, param_list, score_list, iter_num):
         raise NotImplementedError
+
+    #def _generate(self, param_list, score_list):
+        #raise NotImplementedError
 
     ###### Generate Parameters
     @staticmethod
@@ -112,6 +115,32 @@ class HPOptimizationAbstract(object):
             param_dict_list.append(param_dict)
         return param_dict_list
 
+
+    ### generate new bounds ##
+    def _generate_new_param(self, key, new_bounds_dict_list):
+        for i in range(len(new_bounds_dict_list)):
+            if key == 'hidden_units' or key == 'filter_sizes' or key == 'pool_sizes':
+                return self._generate_int_list_params(new_bounds_dict_list[i][key])
+            else :
+                return self._generate_single_params(new_bounds_dict_list[i][key])
+
+    def _generate_new_param_dict(self, new_bounds_dict_list, dup_check = True):
+        param_dict = dict()
+        for _, key in enumerate(self._pbounds):
+            param_dict[key] = self._generate_new_param(key, new_bounds_dict_list)
+
+        if not self._check_duplicated_param_dict(self.unique_param_dict, param_dict) and dup_check :
+            return param_dict
+        else:
+            return self._generate_new_param_dict(new_bounds_dict_list)
+
+    def _generate_new_param_dict_list(self, new_bounds_dict_list, new_params):
+        param_dict_list = list()
+        for _ in range(new_params):
+            param_dict = self._generate_new_param_dict(new_bounds_dict_list, dup_check = self.DUP_CHECK)
+            param_dict_list.append(param_dict)
+
+        return param_dict_list
 
 
     ### stratified ###

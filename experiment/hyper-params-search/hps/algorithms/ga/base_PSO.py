@@ -3,10 +3,10 @@ import random
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
 
 
-class ParticleSwarmOptimization(HPOptimizationAbstract):
+class BASE_ParticleSwarmOptimization(HPOptimizationAbstract):
     def __init__(self, **kwargs):
         # inheritance init
-        super(ParticleSwarmOptimization, self).__init__(**kwargs)
+        super(BASE_ParticleSwarmOptimization, self).__init__(**kwargs)
         self._check_hpo_params()
         self.DUP_CHECK = False
 
@@ -18,7 +18,7 @@ class ParticleSwarmOptimization(HPOptimizationAbstract):
         self._delta = self._hpo_params["delta"]    # modified PSO
 
     # generate candidate function
-    def _generate(self, param_list, score_list):
+    def _generate(self, param_list, score_list, iter_num):
 
         result_param_list = list()
         p_best_list = list()

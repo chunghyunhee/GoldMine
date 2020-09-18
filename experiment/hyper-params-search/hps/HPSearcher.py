@@ -10,6 +10,9 @@ from hps.common.Constants import Constants
 from hps.common.Common import Common
 from hps.algorithms.HPOptimizerFactory import HPOptimizerFactory
 
+from hps.dataset.DatasetFactory import DatasetFactory
+from hps.ml.TensorFlowAbstract import TensorFlowAbstract
+
 # class : HPSearcher
 class HPSearcher(object):
     def __init__(self, param_json_nm):
@@ -20,12 +23,22 @@ class HPSearcher(object):
         self.hps_param_dict = json.loads(param_str)
         self.LOGGER.info(self.hps_param_dict)
         self.LOGGER.info("Hyper-Parameter Search Start...")
+        self.best_hps_param_dict_list = list()
 
     def run(self):
         ## HPO Algorithm
         hpo_algorithm = HPOptimizerFactory.create(self.hps_param_dict)
         ## Optimize
-        hpo_algorithm.optimize()
+        self.best_hps_param_dict_list = hpo_algorithm.optimize()[0] # 각 particle의 parameter 저장
+
+
+    def predict(self, data_nm):
+        ds_train, ds_test = DatasetFactory.create(data_nm)
+        self.LOGGER.info("{}".format(self.best_hps_param_dict_list))
+        predict_test = TensorFlowAbstract(self.best_hps_param_dict_list)
+        predict_test.predict(ds_test)
+
+
 
 
 if __name__ == '__main__':
@@ -34,7 +47,13 @@ if __name__ == '__main__':
     else :
         param_json_filename = sys.argv[1]
         hp_searcher = HPSearcher(param_json_filename)
+
+        # train
         hp_searcher.run()
+        # test
+        name = "MNIST"
+        hp_searcher.predict(name)
+
         time.sleep(1)
 
 

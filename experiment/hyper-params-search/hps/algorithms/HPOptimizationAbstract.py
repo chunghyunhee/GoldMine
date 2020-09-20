@@ -60,6 +60,7 @@ class HPOptimizationAbstract(object):
 
 
 
+<<<<<<< HEAD
     def optimize_test(self, best_param_dict_list):
         hash_list = list()
         score_list = list()
@@ -73,6 +74,8 @@ class HPOptimizationAbstract(object):
         return self._make_best_params(hash_list, score_list)
 
 
+=======
+>>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
     ###############
     ### abstract function... must implement child class!
     def _check_hpo_params(self):

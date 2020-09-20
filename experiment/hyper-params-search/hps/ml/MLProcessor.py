@@ -51,10 +51,13 @@ class MLProcessor(multiprocessing.Process):
         self.queue.put({"results" : results, "hash_value" : self.hash_value})
 
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
 if __name__ == '__main__':
     parameters = {
         ## model parameters

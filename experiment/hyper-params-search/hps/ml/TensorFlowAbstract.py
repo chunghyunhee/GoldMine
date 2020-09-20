@@ -75,7 +75,12 @@ class TensorFlowAbstract(object):
         result_callback = LearnResultCallback(global_sn=self.param_dict.get("global_sn", "0"))
         early_stop_callback = EarlyStopCallback(self.param_dict)
 
+<<<<<<< HEAD
         self.model.predict(dataset, callbacks=[result_callback, early_stop_callback])
+=======
+        self.model.predict(
+            dataset, callbacks=[result_callback, early_stop_callback])
+>>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
 
         self.stopped_epoch = early_stop_callback.get_stopped_epoch()
         return result_callback.get_result()

@@ -25,7 +25,7 @@ class ProcessManager(threading.Thread):
         self.device_list = list()
         if Constants.DEVICE_MODE.lower() == "gpu":
             self.device_list.append(int(Constants.DEVICE_MEM))
-        self.MEM_LIMIT = 2048
+        self.MEM_LIMIT = 1024
 
     def append(self, hash_val, ml_alg, param_dict):
         proc = MLProcessor(hash_val, ml_alg, param_dict, self.dataset_nm, self.queue)

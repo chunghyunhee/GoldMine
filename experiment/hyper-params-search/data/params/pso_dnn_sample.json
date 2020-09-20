@@ -1,17 +1,7 @@
 {
   "dataset" : "mnist",
-  "hpo_alg": "PSO",
+  "hpo_alg": "base_PSO",
   "hpo_params" : {
-    "mut_prob" : 0.5,
-    "cx_prob" : 0.5,
-    "sel_ratio" : 0.5,
-    "mut_ratio" : 0.25,
-    "cx_ratio" : 0.25,
-    "k" : 3,
-    "T0" : 1.0,
-    "top" : 2,
-    "alpha" : 0.80,
-    "count" : 1,
     "n_params": 2,
     "w" : 0.1,
     "n_steps" : 2,

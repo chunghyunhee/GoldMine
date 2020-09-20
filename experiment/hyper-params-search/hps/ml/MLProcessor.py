@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Author : Jin Kim
 # e-mail : jinkim@seculayer.com
-# Powered by Seculayer © 2020 Solution Development 2 Team, R&D Center. 
+# Powered by Seculayer © 2020 Solution Development 2 Team, R&D Center.
 
 
 import multiprocessing
@@ -10,7 +10,6 @@ from hps.common.Constants import Constants
 from hps.common.Common import Common
 from hps.ml.MLAlgorithmFactory import MLAlgorithmFactory
 from hps.dataset.DatasetFactory import DatasetFactory
-from hps.utils.TensorFlowUtils import TensorFlowUtils
 
 # class : MLProcessor
 class MLProcessor(multiprocessing.Process):
@@ -35,6 +34,7 @@ class MLProcessor(multiprocessing.Process):
         self.gpu_idx = gpu_idx
         self.mem_limit = mem_limit
 
+
     def run(self):
         self.LOGGER.info("MLProcessing Running")
         #TensorFlowUtils.device_memory_limit(self.gpu_idx, self.mem_limit)
@@ -49,6 +49,11 @@ class MLProcessor(multiprocessing.Process):
         # learning
         results = algorithm.learn(dataset=ds_train, verbose=0)
         self.queue.put({"results" : results, "hash_value" : self.hash_value})
+
+
+
+
+
 
 if __name__ == '__main__':
     parameters = {
@@ -79,4 +84,3 @@ if __name__ == '__main__':
     proc.start()
     print(result_queue.get())
     proc.join()
-

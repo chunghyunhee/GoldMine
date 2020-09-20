@@ -1,4 +1,4 @@
-
+from random import uniform
 import numpy as np
 import json
 
@@ -41,8 +41,8 @@ class HPOptimizationAbstract(object):
         ## Hyper Parameter Optimize
         for i in range(self._n_steps):
             ### Generate Candidate parameters
-            hyper_param_list = self._generate(param_list, score_list)
-            self.LOGGER.info(hyper_param_list)
+            #hyper_param_list = self._generate(param_list, score_list)
+            hyper_param_list = self._generate(param_list, score_list, i)
 
             ### Get learning results
             hash_list, score_list = self._learn(i, hyper_param_list)
@@ -58,13 +58,31 @@ class HPOptimizationAbstract(object):
         ## return top-k best parameter and score
         return self._make_best_params(self.hash_idx_list, self.score_list)
 
+
+
+    def optimize_test(self, best_param_dict_list):
+        hash_list = list()
+        score_list = list()
+
+        ## getting predit results
+        for i in range(len(best_param_dict_list)):
+            hash_list, score_list = self._predict(best_param_dict_list)
+            self.LOGGER.info("{},{}".format(hash_list, score_list))
+
+        ## return top-k best parameter and score
+        return self._make_best_params(hash_list, score_list)
+
+
     ###############
     ### abstract function... must implement child class!
     def _check_hpo_params(self):
         raise NotImplementedError
 
-    def _generate(self, param_list, score_list):
+    def _generate(self, param_list, score_list, iter_num):
         raise NotImplementedError
+
+    #def _generate(self, param_list, score_list):
+        #raise NotImplementedError
 
     ###### Generate Parameters
     @staticmethod
@@ -73,6 +91,8 @@ class HPOptimizationAbstract(object):
         for i in range(np.random.randint(1,bound_data[0])):
             tmp_list.append(int(np.random.randint(1,bound_data[1])))
         return ",".join(map(str, tmp_list))
+
+
 
     @staticmethod
     def _generate_single_params(bound_data):
@@ -89,6 +109,7 @@ class HPOptimizationAbstract(object):
             return self._generate_int_list_params(self._pbounds[key])
         else :
             return self._generate_single_params(self._pbounds[key])
+
 
     def _generate_param_dict(self, dup_check=True):
         param_dict = dict()
@@ -107,9 +128,84 @@ class HPOptimizationAbstract(object):
             param_dict_list.append(param_dict)
         return param_dict_list
 
+
+    ### generate new bounds ##
+    def _generate_new_param(self, key, new_bounds_dict_list):
+        for i in range(len(new_bounds_dict_list)):
+            if key == 'hidden_units' or key == 'filter_sizes' or key == 'pool_sizes':
+                return self._generate_int_list_params(new_bounds_dict_list[i][key])
+            else :
+                return self._generate_single_params(new_bounds_dict_list[i][key])
+
+    def _generate_new_param_dict(self, new_bounds_dict_list, dup_check = True):
+        param_dict = dict()
+        for _, key in enumerate(self._pbounds):
+            param_dict[key] = self._generate_new_param(key, new_bounds_dict_list)
+
+        if not self._check_duplicated_param_dict(self.unique_param_dict, param_dict) and dup_check :
+            return param_dict
+        else:
+            return self._generate_new_param_dict(new_bounds_dict_list)
+
+    def _generate_new_param_dict_list(self, new_bounds_dict_list, new_params):
+        param_dict_list = list()
+        for _ in range(new_params):
+            param_dict = self._generate_new_param_dict(new_bounds_dict_list, dup_check = self.DUP_CHECK)
+            param_dict_list.append(param_dict)
+
+        return param_dict_list
+
+
+    ### stratified ###
+
+    @staticmethod
+    def stratified_generate_int_list_param(param_index, bound_data):
+        tmp_list = list()
+        for i in range(np.random.randint(1, bound_data[0])):
+            # stratified = 5, each particle's parameter sampled
+            if param_index % 5 == 0:
+                tmp_list.append(int(np.random.randint(1, bound_data[1]/5)))
+            elif param_index % 5 == 1 :
+                tmp_list.append(int(np.random.randint(bound_data[1]/5, (bound_data[1]*2)/5)))
+            elif param_index % 5 == 2 :
+                tmp_list.append(int(np.random.randint((bound_data[1]*2)/5, (bound_data[1]*3)/5)))
+            elif param_index % 5 == 3:
+                tmp_list.append(int(np.random.randint((bound_data[1]*3)/5, (bound_data[1]*4)/5)))
+            else :
+                tmp_list.append(int(np.random.randint((bound_data[1]*4)/5, bound_data[1])))
+        return ",".join(map(str, tmp_list))
+
+    def _generate_stratified_param(self, param_index, key):
+        if key == 'hidden_units' or key == "filter_sizes" or key == "pool_sizes":
+            # TODO : first value of hidden, filter, pool must be above 1
+            return self.stratified_generate_int_list_param(param_index, self._pbounds[key])
+        else :
+            return self._generate_single_params(self._pbounds[key])
+
+    def _generate_stratified_param_dict(self, param_index, dup_check = True):
+        param_dict = dict()
+        for _ , key in enumerate(self._pbounds):
+            param_dict[key] = self._generate_stratified_param(param_index, key)
+
+        if not self._check_duplicated_param_dict(self.unique_param_dict, param_dict) and dup_check:
+            return param_dict
+        else :
+            return self._generate_param_dict()
+
+    def _generate_stratified_param_list(self, num_params):
+        param_dict_list = list()
+        for i in range(num_params):
+            param_dict = self._generate_stratified_param_dict(i, dup_check=self.DUP_CHECK)
+            param_dict_list.append(param_dict)
+        return param_dict_list
+
+    ###
+
+
     ###### Generate Parameters END
 
     ### DUPLICATE
+
     @staticmethod
     def _param_dict_to_hash(param_dict):
         result_str = ""
@@ -137,6 +233,13 @@ class HPOptimizationAbstract(object):
     def _make_learning_param_dict(self, step, idx, hyper_params):
         temp_dict = dict()
         model_nm = "-".join([self.hps_info["hpo_alg"], self.hps_info["ml_alg"], str(step), str(idx)])
+        temp_dict["model_nm"] = model_nm
+
+        return dict(temp_dict, **self.hps_info["ml_params"]["model_param"], **hyper_params)
+
+    def _make_predict_param_dict(self, idx, hyper_params):
+        temp_dict = dict()
+        model_nm = "-".join([self.hps_info["hpo_alg"], self.hps_info["ml_alg"], str(idx)])
         temp_dict["model_nm"] = model_nm
 
         return dict(temp_dict, **self.hps_info["ml_params"]["model_param"], **hyper_params)
@@ -181,6 +284,40 @@ class HPOptimizationAbstract(object):
             _temp_dict["results"] = results
 
         return hash_list, score_list
+
+    def _predict(self, hyper_param_list):
+        ## get learning results
+        hash_list = list()
+        score_list = list()
+
+        proc_manager = ProcessManager(self.dataset_nm)
+
+        for idx, hyper_params in enumerate(hyper_param_list):
+            _temp_hash = self._param_dict_to_hash(hyper_params)
+
+            # make params
+            param_dict = self._make_predict_param_dict(idx, hyper_params)
+            proc_manager.append(_temp_hash, self.hps_info.get("ml_alg"), param_dict)
+
+        proc_manager.start()
+        proc_manager.join()
+
+        for results in proc_manager.get_results():
+            ## hash value
+            _temp_hash = results.get("hash_value")
+            hash_list.append(_temp_hash)
+
+            ## score
+            score = float(results["results"][-1][self._eval_key])
+            score_list.append(score)
+
+            ### store history
+            _temp_dict = self.unique_param_dict[_temp_hash]
+            _temp_dict["score"] = score
+            _temp_dict["results"] = results
+
+        return hash_list, score_list
+
 
     def _sorted_score(self, score_list):
         ## minimize (default)

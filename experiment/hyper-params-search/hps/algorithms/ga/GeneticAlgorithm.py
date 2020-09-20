@@ -29,7 +29,7 @@ class GeneticAlgorithm(HPOptimizationAbstract):
         self._n_steps = self._hpo_params["n_steps"]
 
     ## genetic algorithm main function
-    def _generate(self, param_list, score_list):
+    def _generate(self, param_list, score_list, iter_num):
         result_param_list = list()
         best_param_list = self._population(param_list)
         sel_params = self._selection(best_param_list)
@@ -60,7 +60,7 @@ class GeneticAlgorithm(HPOptimizationAbstract):
     def _selection(self, param_dict_list):
         return param_dict_list[:self._n_sel]
 
-    def _mutation(self, param_dict_list):
+    def _mutation(self, param_dict_list, bound_dict_list):
         mut_params = list()
         for param_dict in param_dict_list[:self._n_mut]:
             temp_param_dict = dict()

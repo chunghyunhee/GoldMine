@@ -61,6 +61,7 @@ if __name__ == '__main__':
         "job_type" : "learn",
         ## learning parameters
         "global_step" : "10",
+        "test_global_step" : "150",
         "early_type": "none",
         "min_step": "10",
         "early_key": "accuracy",

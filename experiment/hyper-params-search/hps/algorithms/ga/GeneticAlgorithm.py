@@ -33,7 +33,7 @@ class GeneticAlgorithm(HPOptimizationAbstract):
         result_param_list = list()
         best_param_list = self._population(param_list)
         sel_params = self._selection(best_param_list)
-        mut_params = self._mutation(best_param_list)
+        mut_params = self._mutation(best_param_list, self._pbounds)
         cx_params = self._crossover(best_param_list)
 
         result_param_list += sel_params + mut_params + cx_params

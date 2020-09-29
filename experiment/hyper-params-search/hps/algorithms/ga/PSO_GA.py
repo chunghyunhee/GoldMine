@@ -7,10 +7,10 @@ import time
 from hps.algorithms.HPOptimizationAbstract import HPOptimizationAbstract
 from hps.algorithms.ga.GeneticAlgorithm import GeneticAlgorithm
 
-class ParticleSwarmOptimization(GeneticAlgorithm, HPOptimizationAbstract):
+class GA_ParticleSwarmOptimization(GeneticAlgorithm, HPOptimizationAbstract):
     def __init__(self, **kwargs):
         # inheritance init
-        super(ParticleSwarmOptimization, self).__init__(**kwargs)
+        super(GA_ParticleSwarmOptimization, self).__init__(**kwargs)
         self._check_hpo_params()
         self.DUP_CHECK = False
 
@@ -34,6 +34,7 @@ class ParticleSwarmOptimization(GeneticAlgorithm, HPOptimizationAbstract):
         self._n_sel = int(float(self._hpo_params["sel_ratio"] * self._n_prob))
         self._n_mut = int(float(self._hpo_params["mut_ratio"] * self._n_prob))
         self._n_cx = int(float(self._hpo_params["cx_ratio"] * self._n_prob))
+        self.bound_dict_list = list()
 
     # generate candidate function
     def _generate(self, param_list, score_list, iter_num):
@@ -86,7 +87,7 @@ class ParticleSwarmOptimization(GeneticAlgorithm, HPOptimizationAbstract):
 
         best_param_list += top_param_list
         sel_params = self._selection(best_param_list)
-        mut_params = self._mutation(best_param_list)
+        mut_params = self._mutation(best_param_list, self.bound_dict_list)
         cx_params = self._crossover(best_param_list)
 
         result_param_list += sel_params + mut_params + cx_params
@@ -220,7 +221,7 @@ if __name__ == '__main__':
             }
         }
     }
-    pso = ParticleSwarmOptimization(hps_info = hprs_info)
+    pso = GA_ParticleSwarmOptimization(hps_info = hprs_info)
     best_params = pso._generate([], [])
 
     print(best_params)

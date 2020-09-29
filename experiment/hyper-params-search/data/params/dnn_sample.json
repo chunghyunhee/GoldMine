@@ -1,6 +1,6 @@
 {
   "dataset" : "mnist",
-  "hpo_alg": "PSO",
+  "hpo_alg": "PSO_boundary",
   "hpo_params" : {
     "mut_prob" : 0.5,
     "cx_prob" : 0.5,
@@ -12,9 +12,9 @@
     "top" : 2,
     "alpha" : 0.80,
     "count" : 1,
-    "n_params": 2,
+    "n_params": 10,
     "w" : 0.1,
-    "n_steps" : 2,
+    "n_steps" : 10,
     "c1" : 1.5,
     "c2" : 0.5,
     "k_val" : 1,
@@ -29,6 +29,7 @@
       "input_units" : "100",
       "output_units" : "10",
       "global_step" : "10",
+      "test_global_step" : "150",
       "early_type" : "2",
       "min_step" : "10",
       "early_key" : "accuracy",

@@ -18,7 +18,7 @@ class SimulatedAnnealing(HPOptimizationAbstract):
         self._k = self._hpo_params["k"]
         self._n_steps = self._hpo_params["n_steps"]
 
-    def _generate(self, param_list, score_list):
+    def _generate(self, param_list, score_list, iter):
         result_param_list = list()
 
         # random init population

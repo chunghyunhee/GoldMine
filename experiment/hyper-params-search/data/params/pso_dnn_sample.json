@@ -2,11 +2,11 @@
   "dataset" : "mnist",
   "hpo_alg": "base_PSO",
   "hpo_params" : {
-    "n_params": 2,
+    "n_params": 10,
     "w" : 0.1,
-    "n_steps" : 2,
-    "c1" : 1.5,
-    "c2" : 0.5,
+    "n_steps" : 10,
+    "c1" : 0.5,
+    "c2" : 1.5,
     "k_val" : 1,
     "delta" : 0.1,
     "eval_key" : "accuracy"
@@ -19,6 +19,7 @@
       "input_units" : "100",
       "output_units" : "10",
       "global_step" : "10",
+      "test_global_step" : "150",
       "early_type" : "2",
       "min_step" : "10",
       "early_key" : "accuracy",

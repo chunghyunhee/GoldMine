@@ -57,7 +57,8 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
         if len(bound_dict_list) == 0:
             # self._pbounds값으로 대체
             for i in range(len(best_param_list)):
-                bound_dict_list += self._pbounds
+                # bound_dict_list에 첫번째 값은 pbounds
+                bound_dict_list.append(self._pbounds)
                 GA_param_list = self._generate_GA_particle(best_param_list, bound_dict_list)
         else :
             bound_dict_list = self.ga_boundary(best_param_list, iter_num, bound_dict_list)
@@ -94,8 +95,6 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
 
         for i in range(1, self._top):
             top_param_list.append(param_list[i])
-
-        self.LOGGER.info("{}".format(top_param_list))
 
         # GA 적용
         result_param_list = list()   # 결과반환
@@ -253,20 +252,28 @@ class ParticleSwarmOptimization(GeneticAlgorithm, SimulatedAnnealing, HPOptimiza
                     # param별  bound지정
                     param_dict[j] = inner_bound_list
 
-                bound_dict_list += param_dict
+                bound_dict_list.append(param_dict)
         return bound_dict_list
 
-    # boundary 변경하는 mutation override
+    # boundary 변경할 수 있는 mutation methods
     def _mutation(self, param_dict_list, bound_dict_list):
         mut_params = list()
+
         for param_dict in param_dict_list[:self._n_mut]:
+            temp_param_list = list()
             temp_param_dict = dict()
-            for _ , key in enumerate(bound_dict_list):
-                if np.random.rand() > self._mut_prob:
-                    temp_param_dict[key] = self._generate_new_param(key, bound_dict_list)
-                else :
-                    temp_param_dict[key] = param_dict[key]
-            mut_params.append(temp_param_dict)
+
+            # 각 particle별로 bound range생성
+            for j in range(len(bound_dict_list)):
+                for _ , key in enumerate(bound_dict_list[j]):
+                    if np.random.rand() > self._mut_prob:
+                        temp_param_dict[key] = self._generate_new_param(key, bound_dict_list[j])
+                    else :
+                        temp_param_dict[key] = param_dict[key]
+                temp_param_list.append(temp_param_dict)
+
+            mut_params += temp_param_list
+
         return mut_params
 
 # main __init__ to execute in this single file

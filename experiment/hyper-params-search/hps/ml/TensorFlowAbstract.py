@@ -63,24 +63,25 @@ class TensorFlowAbstract(object):
         early_stop_callback = EarlyStopCallback(self.param_dict)
 
         self.model.fit(
-            dataset, verbose=verbose, epochs=self.param_dict.get("global_step", 1),
+            dataset, verbose=verbose, epochs=self.param_dict.get("global_step", 10),
             callbacks=[result_callback, early_stop_callback],
         )
 
         self.stopped_epoch = early_stop_callback.get_stopped_epoch()
         return result_callback.get_result()
 
-    def predict(self, dataset):
+    def predict(self, dataset, verbose = 0):
         ## callbacks
         result_callback = LearnResultCallback(global_sn=self.param_dict.get("global_sn", "0"))
         early_stop_callback = EarlyStopCallback(self.param_dict)
 
-<<<<<<< HEAD
+        self.model.predict(dataset, callbacks=[result_callback, early_stop_callback],
+                           epoch = self.param_dict.get("test_global_step",150),
+                           verbose = verbose)
+
         self.model.predict(dataset, callbacks=[result_callback, early_stop_callback])
-=======
         self.model.predict(
             dataset, callbacks=[result_callback, early_stop_callback])
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
 
         self.stopped_epoch = early_stop_callback.get_stopped_epoch()
         return result_callback.get_result()

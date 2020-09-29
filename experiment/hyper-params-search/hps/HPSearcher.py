@@ -23,25 +23,28 @@ class HPSearcher(object):
         self.hps_param_dict = json.loads(param_str)
         self.LOGGER.info(self.hps_param_dict)
         self.LOGGER.info("Hyper-Parameter Search Start...")
-<<<<<<< HEAD
         self.best_param_dict_list = list()
-=======
+        self.best_param_dict_list = list()
+
         self.best_hps_param_dict_list = list()
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
+
 
     def run(self):
         ## HPO Algorithm
         hpo_algorithm = HPOptimizerFactory.create(self.hps_param_dict)
         ## Optimize
-<<<<<<< HEAD
+        _, self.best_param_dict_list = hpo_algorithm.optimize()
+        ## check
+        #self.LOGGER.info("{}".format(self.best_param_dict_list))
         self.best_param_dict_list = hpo_algorithm.optimize()
 
 
+    '''
     def predict(self):
         hpo_algorithm = HPOptimizerFactory.create(self.hps_param_dict)
         hpo_algorithm.optimize_test(self.best_param_dict_list)
-=======
         self.best_hps_param_dict_list = hpo_algorithm.optimize()[0] # 각 particle의 parameter 저장
+    '''
 
 
     def predict(self, data_nm):
@@ -49,7 +52,7 @@ class HPSearcher(object):
         self.LOGGER.info("{}".format(self.best_hps_param_dict_list))
         predict_test = TensorFlowAbstract(self.best_hps_param_dict_list)
         predict_test.predict(ds_test)
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
+
 
 
 
@@ -64,13 +67,12 @@ if __name__ == '__main__':
         # train
         hp_searcher.run()
         # test
-<<<<<<< HEAD
+
+        #hp_searcher.predict()
         hp_searcher.predict()
-=======
+
         name = "MNIST"
         hp_searcher.predict(name)
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
-
         time.sleep(1)
 
 

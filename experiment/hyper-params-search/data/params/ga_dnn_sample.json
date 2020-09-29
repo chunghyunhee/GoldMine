@@ -18,6 +18,7 @@
       "input_units" : "100",
       "output_units" : "10",
       "global_step" : "10",
+      "test_global_step" : "150",
       "early_type" : "2",
       "min_step" : "10",
       "early_key" : "accuracy",

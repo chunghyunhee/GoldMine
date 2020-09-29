@@ -40,6 +40,8 @@ class MLProcessor(multiprocessing.Process):
         #TensorFlowUtils.device_memory_limit(self.gpu_idx, self.mem_limit)
 
         # ml algorithm
+        self.LOGGER.info("{}".format(self.param_dict))
+
         algorithm = MLAlgorithmFactory.create(self.algorithm_name, self.param_dict)
         algorithm.build()
 
@@ -51,13 +53,6 @@ class MLProcessor(multiprocessing.Process):
         self.queue.put({"results" : results, "hash_value" : self.hash_value})
 
 
-<<<<<<< HEAD
-
-
-
-
-=======
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
 if __name__ == '__main__':
     parameters = {
         ## model parameters
@@ -66,6 +61,7 @@ if __name__ == '__main__':
         "job_type" : "learn",
         ## learning parameters
         "global_step" : "10",
+        "test_global_step" : "150",
         "early_type": "none",
         "min_step": "10",
         "early_key": "accuracy",

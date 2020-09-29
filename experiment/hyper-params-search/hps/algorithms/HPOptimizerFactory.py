@@ -8,6 +8,8 @@ from hps.algorithms.ga.ParticleSwarmOptimization import ParticleSwarmOptimizatio
 from hps.algorithms.ga.SimulatedAnnealing_3 import SimulatedAnnealing
 from hps.algorithms.ga.base_PSO import BASE_ParticleSwarmOptimization
 from hps.algorithms.ga.SA_PSO import SA_ParticleSwarmOptimization
+from hps.algorithms.ga.PSO_GA import GA_ParticleSwarmOptimization
+from hps.algorithms.ga.PSO_boudary import ParticleSwarmOptimization_boundary
 
 # class : HPOptimizerFactory
 class HPOptimizerFactory(object):
@@ -30,5 +32,11 @@ class HPOptimizerFactory(object):
         elif hpo_alg == "SA_PSO":
             sa_pso = SA_ParticleSwarmOptimization(hps_info= hpo_dict)
             return sa_pso
+        elif hpo_alg == "GA_PSO":
+            ga_pso = GA_ParticleSwarmOptimization(hps_info= hpo_dict)
+            return ga_pso
+        elif hpo_alg == "PSO_boundary":
+            pso_boundary = ParticleSwarmOptimization_boundary(hps_info= hpo_dict)
+            return pso_boundary
         else:
             raise NotImplementedError

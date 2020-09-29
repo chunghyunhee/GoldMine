@@ -56,11 +56,12 @@ class HPOptimizationAbstract(object):
             self.LOGGER.info("{},{}".format(param_list, score_list))
 
         ## return top-k best parameter and score
-        return self._make_best_params(self.hash_idx_list, self.score_list)
+        #return self._make_best_params(self.hash_idx_list, self.score_list)
+        return self._make_best_params(self.hash_idx_list, self.score_list), param_list
 
 
 
-<<<<<<< HEAD
+
     def optimize_test(self, best_param_dict_list):
         hash_list = list()
         score_list = list()
@@ -68,14 +69,13 @@ class HPOptimizationAbstract(object):
         ## getting predit results
         for i in range(len(best_param_dict_list)):
             hash_list, score_list = self._predict(best_param_dict_list)
-            self.LOGGER.info("{},{}".format(hash_list, score_list))
+            self.LOGGER.info("predict score : {}".format(score_list))
 
         ## return top-k best parameter and score
-        return self._make_best_params(hash_list, score_list)
+        return hash_list, score_list
 
 
-=======
->>>>>>> 7cb8d1e137136875eccd61775bf856584913bd61
+
     ###############
     ### abstract function... must implement child class!
     def _check_hpo_params(self):
@@ -134,11 +134,10 @@ class HPOptimizationAbstract(object):
 
     ### generate new bounds ##
     def _generate_new_param(self, key, new_bounds_dict_list):
-        for i in range(len(new_bounds_dict_list)):
-            if key == 'hidden_units' or key == 'filter_sizes' or key == 'pool_sizes':
-                return self._generate_int_list_params(new_bounds_dict_list[i][key])
-            else :
-                return self._generate_single_params(new_bounds_dict_list[i][key])
+        if key == 'hidden_units' or key == 'filter_sizes' or key == 'pool_sizes':
+            return self._generate_int_list_params(new_bounds_dict_list[key])
+        else :
+            return self._generate_single_params(new_bounds_dict_list[key])
 
     def _generate_new_param_dict(self, new_bounds_dict_list, dup_check = True):
         param_dict = dict()
@@ -318,7 +317,6 @@ class HPOptimizationAbstract(object):
             _temp_dict = self.unique_param_dict[_temp_hash]
             _temp_dict["score"] = score
             _temp_dict["results"] = results
-
         return hash_list, score_list
 
 
